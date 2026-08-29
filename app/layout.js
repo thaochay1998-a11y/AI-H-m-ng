@@ -1,6 +1,14 @@
 export const metadata = {
-  title: 'AI H’Mông',
-  description: 'Trợ lý AI H’Mông',
+  title: 'AI H’Mông - Trợ lý thông minh',
+  description: 'Trợ lý AI dành riêng cho cộng đồng H’Mông và dịch thuật đa ngôn ngữ',
+}
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: '#0f172a',
 }
 
 export default function RootLayout({ children }) {
@@ -9,7 +17,7 @@ export default function RootLayout({ children }) {
       <head>
         <script src="https://cdn.tailwindcss.com"></script>
       </head>
-      <body className="bg-slate-900 text-white min-h-screen">
+      <body className="bg-slate-950 text-slate-100 antialiased h-dvh overflow-hidden select-none">
         {children}
       </body>
     </html>
