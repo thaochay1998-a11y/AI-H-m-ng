@@ -42,13 +42,27 @@ export default function Home() {
       messages: [
         {
           role: 'assistant',
-          content: 'Pob tsawg! Tôi là AI H’Mông. Bấm biểu tượng 📷 để tải ảnh lên phân tích hoặc nhập câu hỏi/yêu cầu vẽ ảnh nhé!'
+          content: 'Pob tsawg! Tôi là AI H’Mông. Bấm biểu tượng 📷 để gửi ảnh hoặc nhập câu hỏi / yêu cầu vẽ ảnh nhé!'
         }
       ]
     }
     setChats(prev => [newChat, ...prev])
     setCurrentChatId(newChat.id)
     setSidebarOpen(false)
+  }
+
+  const deleteChat = (id, e) => {
+    e.stopPropagation()
+    const updated = chats.filter(c => c.id !== id)
+    if (updated.length === 0) {
+      localStorage.removeItem('hmong_chat_sessions')
+      createNewChat()
+    } else {
+      setChats(updated)
+      if (currentChatId === id) {
+        setCurrentChatId(updated[0].id)
+      }
+    }
   }
 
   const handleImageSelect = (e) => {
@@ -122,6 +136,7 @@ export default function Home() {
 
   return (
     <div className="flex h-screen bg-[#1e1e2e] text-slate-100 font-sans overflow-hidden">
+      {/* Sidebar Menu */}
       <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-[#181825] border-r border-slate-800 flex flex-col transition-transform duration-300 md:static md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="p-3">
           <button onClick={createNewChat} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-700 hover:bg-slate-800 text-sm font-medium transition text-emerald-400">
@@ -132,16 +147,25 @@ export default function Home() {
           {chats.map(chat => (
             <div key={chat.id} onClick={() => { setCurrentChatId(chat.id); setSidebarOpen(false); }} className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-sm cursor-pointer transition ${chat.id === currentChatId ? 'bg-slate-800 text-white font-medium' : 'text-slate-400 hover:bg-slate-800/50'}`}>
               <span className="truncate flex-1">💬 {chat.title}</span>
+              <button onClick={(e) => deleteChat(chat.id, e)} className="text-slate-500 hover:text-red-400 px-1.5 py-0.5 rounded text-xs transition">✕</button>
             </div>
           ))}
         </div>
       </aside>
 
+      {sidebarOpen && (
+        <div onClick={() => setSidebarOpen(false)} className="fixed inset-0 bg-black/60 z-40 md:hidden" />
+      )}
+
+      {/* Main Layout */}
       <div className="flex-1 flex flex-col h-full relative">
         <header className="flex items-center justify-between p-3.5 bg-[#181825] border-b border-slate-800">
           <div className="flex items-center gap-3">
             <button onClick={() => setSidebarOpen(!sidebarOpen)} className="md:hidden p-1.5 rounded-lg bg-slate-800 text-slate-300">☰</button>
-            <span className="font-semibold text-sm">AI H’Mông</span>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center font-bold text-xs text-slate-950">AI</div>
+              <span className="font-semibold text-sm">AI H’Mông</span>
+            </div>
           </div>
           <button onClick={createNewChat} className="md:hidden text-xs bg-emerald-600/20 text-emerald-400 px-2.5 py-1.5 rounded-lg">+ Mới</button>
         </header>
@@ -180,5 +204,4 @@ export default function Home() {
       </div>
     </div>
   )
-    }
-      
+  }
