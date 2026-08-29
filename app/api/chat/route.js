@@ -11,41 +11,48 @@ Nhiệm vụ chính:
 export async function POST(req) {
   try {
     const { messages } = await req.json()
-    const apiKey = process.env.OPENAI_API_KEY
+    const apiKey = process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY
 
     if (!apiKey) {
       return NextResponse.json(
-        { error: 'Thiếu OPENAI_API_KEY trên Vercel.' },
+        { error: 'Thiếu GEMINI_API_KEY trên Vercel.' },
         { status: 500 }
       )
     }
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
-        temperature: 0.7,
-      }),
-    })
+    // Chuyển đổi định dạng tin nhắn cho Google Gemini
+    const contents = messages.map(m => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }]
+    }))
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_instruction: {
+            parts: [{ text: SYSTEM_PROMPT }]
+          },
+          contents: contents
+        })
+      }
+    )
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
       return NextResponse.json(
-        { error: errorData.error?.message || 'Lỗi API OpenAI' },
+        { error: errorData.error?.message || 'Lỗi API Gemini' },
         { status: response.status }
       )
     }
 
     const data = await response.json()
-    const aiContent = data.choices?.[0]?.message?.content || 'Không nhận được phản hồi.'
+    const aiContent = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Không nhận được phản hồi.'
 
     return NextResponse.json({ result: aiContent })
   } catch (err) {
     return NextResponse.json({ error: 'Lỗi máy chủ: ' + err.message }, { status: 500 })
   }
-}
+                             }
