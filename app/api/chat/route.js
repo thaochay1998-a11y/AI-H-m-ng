@@ -6,35 +6,41 @@ export async function POST(req) {
     const apiKey = process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY
 
     if (!apiKey) {
-      return NextResponse.json({ error: 'Thiếu GEMINI_API_KEY trên Vercel.' }, { status: 500 })
+      return NextResponse.json({ error: 'Thiếu GEMINI_API_KEY trên Vercel/Netlify.' }, { status: 500 })
     }
 
     const lastMessage = messages?.[messages.length - 1]?.content || ''
     const lowerMsg = lastMessage.toLowerCase()
 
-    // Bắt từ khóa kích hoạt vẽ ảnh
-    const isImageRequest = ['vẽ', 'tạo ảnh', 'hình ảnh', 'chụp ảnh', 'bức ảnh', 'draw', 'image', 'picture'].some(kw => lowerMsg.includes(kw))
+    // 1. NHẬN DIỆN YÊU CẦU TẠO / SỬA ẢNH
+    const isImageRequest = ['vẽ', 'tạo ảnh', 'hình ảnh', 'chụp ảnh', 'bức ảnh', 'thay trang phục', 'ghép cảnh', 'đổi bối cảnh', 'draw', 'image'].some(kw => lowerMsg.includes(kw))
 
     if (isImageRequest) {
       let promptText = lastMessage
-        .replace(/tạo ảnh|vẽ giúp|vẽ cho|vẽ|chụp ảnh|bức ảnh|hình ảnh|cho tôi|giúp tôi/gi, '')
+        .replace(/tạo ảnh|vẽ giúp|vẽ cho|vẽ|chụp ảnh|bức ảnh|hình ảnh|cho tôi|giúp tôi|thay trang phục|ghép cảnh/gi, '')
         .trim()
       
       if (!promptText) promptText = 'A Hmong person in vibrant traditional clothing, highly detailed portrait'
       
-      const enhancedPrompt = `${promptText}, highly detailed, photorealistic, 8k resolution, realistic lighting`
+      const enhancedPrompt = `${promptText}, highly detailed, photorealistic, 8k resolution, cinematic lighting`
       const encodedPrompt = encodeURIComponent(enhancedPrompt)
       const randomSeed = Math.floor(Math.random() * 999999)
       
+      // Chạy qua AI Flux Engine
       const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&seed=${randomSeed}&nologo=true&model=flux`
 
       return NextResponse.json({
-        result: `AI H’Mông đã tạo xong bức ảnh theo yêu cầu của bạn:\n\n![Ảnh AI](${imageUrl})`
+        result: `AI H’Mông đã xử lý và tạo ảnh theo yêu cầu của bạn:\n\n![Ảnh AI](${imageUrl})`
       })
     }
 
-    // Xử lý văn bản và đọc ảnh bằng Gemini API
-    const SYSTEM_PROMPT = `Bạn là AI H’Mông - Trợ lý AI thông minh dành cho cộng đồng H’Mông và Việt Nam. Hãy trả lời thân thiện bằng tiếng Việt hoặc tiếng H'Mông (chữ RPA).`
+    // 2. NHẬN DIỆN VĂN BẢN (Giải toán, Viết kịch bản, Trò chuyện, Đọc ảnh)
+    const SYSTEM_PROMPT = `Bạn là AI H’Mông - Trợ lý AI toàn năng dành cho cộng đồng H’Mông và Việt Nam.
+Nhiệm vụ của bạn:
+- Giải các bài toán, đề thi, bài tập step-by-step rõ ràng.
+- Sáng tạo kịch bản video Facebook Reels, TikTok, YouTube theo yêu cầu.
+- Đọc, soi và phân tích chi tiết hình ảnh được tải lên.
+- Trả lời thân thiện bằng tiếng Việt hoặc tiếng H'Mông (chữ RPA).`
 
     const contents = (messages || []).map((m, index) => {
       const isLast = index === messages.length - 1
