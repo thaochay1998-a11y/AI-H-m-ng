@@ -42,7 +42,7 @@ export default function Home() {
       messages: [
         {
           role: 'assistant',
-          content: 'Pob tsawg! Tôi là AI H’Mông. Bấm biểu tượng 📷 để gửi ảnh hoặc nhập câu hỏi / yêu cầu vẽ ảnh nhé!'
+          content: 'Pob tsawg! Tôi là AI H’Mông. Bạn có thể gửi ảnh chụp (bấm 📷) để phân tích/chỉnh sửa hoặc nhập câu lệnh để vẽ ảnh nhé!'
         }
       ]
     }
@@ -59,9 +59,7 @@ export default function Home() {
       createNewChat()
     } else {
       setChats(updated)
-      if (currentChatId === id) {
-        setCurrentChatId(updated[0].id)
-      }
+      if (currentChatId === id) setCurrentChatId(updated[0].id)
     }
   }
 
@@ -78,7 +76,7 @@ export default function Home() {
     e?.preventDefault()
     if ((!input.trim() && !selectedImage) || loading || !currentChat) return
 
-    const userText = input || (selectedImage ? 'Phân tích bức ảnh này giúp tôi' : '')
+    const userText = input || (selectedImage ? 'Phân tích và chỉnh sửa bức ảnh này giúp tôi' : '')
     const imageToSend = selectedImage
     setInput('')
     setSelectedImage(null)
@@ -136,7 +134,7 @@ export default function Home() {
 
   return (
     <div className="flex h-screen bg-[#1e1e2e] text-slate-100 font-sans overflow-hidden">
-      {/* Sidebar Menu */}
+      {/* Sidebar ChatGPT */}
       <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-[#181825] border-r border-slate-800 flex flex-col transition-transform duration-300 md:static md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="p-3">
           <button onClick={createNewChat} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-700 hover:bg-slate-800 text-sm font-medium transition text-emerald-400">
@@ -153,12 +151,11 @@ export default function Home() {
         </div>
       </aside>
 
-      {sidebarOpen && (
-        <div onClick={() => setSidebarOpen(false)} className="fixed inset-0 bg-black/60 z-40 md:hidden" />
-      )}
+      {sidebarOpen && <div onClick={() => setSidebarOpen(false)} className="fixed inset-0 bg-black/60 z-40 md:hidden" />}
 
-      {/* Main Layout */}
+      {/* Main Container */}
       <div className="flex-1 flex flex-col h-full relative">
+        {/* Header có nút Nâng Pro 49k */}
         <header className="flex items-center justify-between p-3.5 bg-[#181825] border-b border-slate-800">
           <div className="flex items-center gap-3">
             <button onClick={() => setSidebarOpen(!sidebarOpen)} className="md:hidden p-1.5 rounded-lg bg-slate-800 text-slate-300">☰</button>
@@ -167,7 +164,13 @@ export default function Home() {
               <span className="font-semibold text-sm">AI H’Mông</span>
             </div>
           </div>
-          <button onClick={createNewChat} className="md:hidden text-xs bg-emerald-600/20 text-emerald-400 px-2.5 py-1.5 rounded-lg">+ Mới</button>
+          
+          {/* NÚT NÂNG PRO 49K ĐÃ ĐƯỢC GIỮ NGUYÊN */}
+          <div className="flex items-center gap-2">
+            <button onClick={() => alert("Cổng thanh toán Nâng cấp Pro 49k/tháng đang được tích hợp!")} className="text-xs bg-amber-500/20 border border-amber-500/50 text-amber-300 px-3 py-1.5 rounded-lg font-medium hover:bg-amber-500/30 transition flex items-center gap-1">
+              <span>★</span> Nâng Pro 49k
+            </button>
+          </div>
         </header>
 
         <main className="flex-1 overflow-y-auto p-4 space-y-4 max-w-3xl w-full mx-auto">
@@ -197,11 +200,11 @@ export default function Home() {
           <form onSubmit={sendMessage} className="max-w-3xl mx-auto flex gap-2">
             <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageSelect} className="hidden" />
             <button type="button" onClick={() => fileInputRef.current?.click()} className="bg-[#2a2a3c] border border-slate-700 px-3.5 py-3 rounded-xl text-lg">📷</button>
-            <input type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Nhập tin nhắn..." className="flex-1 bg-[#2a2a3c] border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500" />
+            <input type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Nhập tin nhắn hoặc tải ảnh..." className="flex-1 bg-[#2a2a3c] border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500" />
             <button type="submit" disabled={loading} className="bg-emerald-600 text-white px-5 py-3 rounded-xl font-medium text-sm">Gửi</button>
           </form>
         </footer>
       </div>
     </div>
   )
-  }
+}
